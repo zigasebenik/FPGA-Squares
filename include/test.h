@@ -16,7 +16,7 @@ typedef struct{
     int speedX;
     int speedY;
 
-}square;
+}SQUARE;
 
 void testSquares(int numberOfSquares);
 

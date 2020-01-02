@@ -1,7 +1,9 @@
 #include <stdbool.h>
 
-#include "../include/test.h"
-#include "../../SFMLfunctions/include/library.h"
+#include "test.h"
+#include "library.h"
+#include "render_sw.h"
+#include "display.h"
 
 #include <stdio.h>
 #include <time.h>
@@ -9,14 +11,11 @@
 #include <math.h>
 
 
-typedef struct{
-    void (*renderRect)(int,int,int,int,RGBA*);
-    void (*setBackgroundColor)(RGBA*);
-}RENDERER;
 
-square* randomizeSquares(int numberOfSquares)
+SQUARE* randomizeSquares(int numberOfSquares)
 {
-    square *squares = (square*)malloc(sizeof(square)*numberOfSquares);
+
+    SQUARE *squares = (SQUARE*)malloc(sizeof(SQUARE) * numberOfSquares);
 
     srand(time(NULL));
     for(int i=0; i<numberOfSquares; i++)
@@ -43,9 +42,9 @@ square* randomizeSquares(int numberOfSquares)
 }
 
 
-void moveSquares(RENDERER *renderer, square* squares, int n)
+void moveSquares(RENDERER *renderer, SQUARE* squares, int n)
 {
-    square *tmp = squares;
+    SQUARE *tmp = squares;
     for(int i=0;i< n;i++)
     {
         if(tmp->x+tmp->speedX + tmp->size > screenWidth || tmp->x+tmp->speedX < 0 )
@@ -57,7 +56,7 @@ void moveSquares(RENDERER *renderer, square* squares, int n)
         tmp->x += tmp->speedX;
         tmp->y += tmp->speedY;
 
-        renderer->renderRect(tmp->x, tmp->y, tmp->size, tmp->size, &tmp->color);
+        renderRect(renderer, tmp->x, tmp->y, tmp->size, tmp->size, &tmp->color);
         tmp++;
     }
 }
@@ -65,39 +64,40 @@ void moveSquares(RENDERER *renderer, square* squares, int n)
 void testSquares(int numberOfSquares)
 {
 
-    square *squares = randomizeSquares(numberOfSquares);
 
-    RENDERER renderer = {&renderRect, &setFrameBufferColor};
+    SQUARE *squares = randomizeSquares(numberOfSquares);
+    RENDERER renderer = getRendererSw();
+
     RGBA backgroundColor = {200, 200, 200, 255};
 
     bool run = true;
 
     long FPScounter = 0;
-    long FPSupdate = 0;
 
     time_t startTime;
     time(&startTime);
     time_t measureTime;
 
+
+    char fpsString[20];
+
     while (run == true)
     {
 
-        renderer.setBackgroundColor(&backgroundColor);
-
+        currentlyDRAWING = true;
+        setFrameBufferColor(&renderer, &backgroundColor);
         moveSquares(&renderer, squares, numberOfSquares);
 
         time(&measureTime);
         if(difftime(measureTime, startTime) >= 1)
         {
+            sprintf(fpsString, "FPS:%d", FPScounter);
             time(&startTime);
-            FPSupdate = FPScounter;
             FPScounter = 0;
         }
 
-        char fpsString[20];
-        sprintf(fpsString, "FPS:%d", FPSupdate);
-
-        putText(5,5,fpsString,&backgroundColor);
+        putText(&renderer, 5, 5, fpsString, &backgroundColor);
+        currentlyDRAWING = false;
 
         while(timeToSwapFrameBuffer() == false);
 

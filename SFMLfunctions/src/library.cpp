@@ -5,8 +5,20 @@
 #include <SFML/Window.hpp>
 
 #include <iostream>
+#include <SFML/Config.hpp>
 
-bool texturesUPDATED = false;
+
+sf::Uint8* frameBuffer;
+sf::Uint8* windowBuffer;
+//char *frameBuffer;
+int sizeFrameBuffer;
+
+int widthWindow;
+int heightWindow;
+
+int stride;
+
+uint8_t* (*swapFrameBuffersCallback)();
 
 void allignToWindowBuffer()
 {
@@ -22,6 +34,8 @@ void allignToWindowBuffer()
     }
 }
 
+bool texturesUPDATED;
+
 void writeToWindow()
 {
     sf::RenderWindow window(sf::VideoMode(widthWindow, heightWindow), "My window");
@@ -36,6 +50,8 @@ void writeToWindow()
     sf::Sprite sprite;
     sf::Event event;
     // run the program as long as the window is open
+
+
     while (window.isOpen())
     {
         // check all the window's events that were triggered since the last iteration of the loop
@@ -50,6 +66,7 @@ void writeToWindow()
             }
         }
 
+        //window.clear( sf :: Color :: Blue);
         texturesUPDATED = false;
         //window.clear( sf :: Color :: Blue);
         allignToWindowBuffer();
